@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",
+        "outDir": "./dist/scripts",
+        "rootDir": "./src/scripts",
+        "target": "ES2016",
+    },
+    "include": ["src/**/*.ts"], 
+    "exclude": []
+}
