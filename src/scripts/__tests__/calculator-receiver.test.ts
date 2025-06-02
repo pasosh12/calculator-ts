@@ -222,4 +222,15 @@ describe("CalculatorReceiver", () => {
     expect(parseFloat(receiver.firstOperand)).toBeCloseTo(7.3891, 4);
     expect(parseFloat(display.textContent)).toBeCloseTo(7.3891, 4);
   })
+  test('pi+pi',()=>{
+    receiver.firstOperand = Math.PI.toFixed(4);
+    receiver.executeOperation("π");
+    receiver.inputOperator("+");
+    receiver.secondOperand = Math.PI.toFixed(4);
+    expect(parseFloat(receiver.secondOperand)).toBeCloseTo(parseFloat(Math.PI.toFixed(4)));
+    expect(display.textContent).toBe(Math.PI.toFixed(4) + " + " + Math.PI.toFixed(4));
+    receiver.executeOperation();
+    expect(parseFloat(receiver.firstOperand)).toBeCloseTo(Math.PI*2, 4);
+    expect(parseFloat(display.textContent)).toBeCloseTo(Math.PI*2, 4);
+  })
 });

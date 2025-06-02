@@ -41,7 +41,7 @@ export class UnaryOperatorRegistry {
     this.operators.set("sin", new SinOperator());
     this.operators.set("cos", new CosOperator());
     this.operators.set("tan", new TanOperator());
-    this.operators.set("π", new PiConstantOperator());
+    // Удалено π из унарных операторов, теперь обрабатывается специальной функцией
     this.operators.set("10x", new PowerOf10Operator());
     this.operators.set("x!", new FactorialOperator());
     this.operators.set("1/x", new ReciprocalOperator());

@@ -335,4 +335,50 @@ export class CalculatorReceiver {
       this.shouldResetDisplay = true;
     }
   }
+  
+  // Метод для применения унарного оператора ко второму операнду (5+ln(10))
+  applyUnaryToSecondOperand(operator: string) {
+    // Если есть активный бинарный оператор и второй операнд
+    if (this.operator && this.secondOperand) {
+      // Получаем числовое значение второго операнда
+      const value = parseFloat(this.secondOperand);
+      
+      // Получаем унарную команду
+      const command = this.unaryOperatorRegistry.getOperator(operator);
+      
+      if (!command) {
+        this.updateDisplay(`неизвестная команда`);
+        return;
+      }
+      
+      // Проверяем, можно ли выполнить вычисление
+      if (command.canCalculate && !command.canCalculate(value)) {
+        this.updateDisplay("Ошибка");
+        return;
+      }
+      
+      // Вычисляем результат унарной операции
+      const result = command.calculate(value);
+      
+      // Форматируем результат и обновляем второй операнд
+      if (result !== undefined && result !== null) {
+        let formattedResult = result;
+        
+        if (typeof formattedResult === "number") {
+          if (!Number.isInteger(formattedResult)) {
+            formattedResult = parseFloat(formattedResult.toFixed(4));
+          }
+          this.secondOperand = formattedResult.toString();
+        } else {
+          this.secondOperand = String(formattedResult);
+        }
+        
+        // Обновляем дисплей с новым значением второго операнда
+        this.updateDisplay(`${this.firstOperand} ${this.operator} ${this.secondOperand}`);
+      }
+    } else {
+      // Если нет активного оператора или второго операнда, используем стандартную обработку унарной операции
+      this.executeOperation(operator);
+    }
+  }
 }

@@ -38,7 +38,6 @@ const singleOperandOperators = [
   "sinh",
   "cosh",
   "tanh",
-  "π",
 ];
 
 function handleButtonClick(event: Event) {
@@ -48,10 +47,22 @@ function handleButtonClick(event: Event) {
     new DigitCommand(buttonValue, receiver).execute();
   } else if ([",", "."].includes(buttonValue)) {
     new DecimalCommand(receiver).execute();
+  } else if (buttonValue === "π") {
+    // Специальная обработка для кнопки π
+    handlePiButton(receiver);
   } else if (doubleOperandOperators.includes(buttonValue)) {
     new OperatorCommand(buttonValue, receiver).execute();
   } else if (singleOperandOperators.includes(buttonValue)) {
-    new SingleOperandCommand(buttonValue, receiver).execute();
+    // Проверяем, есть ли активный оператор и второй операнд
+    // Если да, то применяем унарный оператор ко второму операнду
+    if (receiver.operator && receiver.secondOperand) {
+      // Преобразуем оператор для совместимости с реестром
+      const op = convertOperator(buttonValue);
+      receiver.applyUnaryToSecondOperand(op);
+    } else {
+      // Иначе используем стандартный унарный оператор
+      new SingleOperandCommand(buttonValue, receiver).execute();
+    }
   } else if (buttonValue === "=") {
     new ResultCommand(receiver).execute();
   } else if (buttonValue === "AC") {
@@ -80,16 +91,83 @@ function handleKeyboardInput(event: KeyboardEvent) {
   }
 }
 
-function convertOperator(key: string): string {
-  switch (key) {
-    case "/":
-      return "÷";
-    case "*":
-      return "×";
-      case 'ex':
-        return "e^x";
-    default:
-      return key;
+function convertOperator(operator: string): string {
+  switch(operator) {
+    case "x²": return "x2";
+    case "x³": return "x3";
+    case "√x": return "√x";
+    case "∛x": return "3√x";
+    case "ex": return "ex";
+    case "10x": return "10x";
+    default: return operator;
+  }
+}
+
+// Специальная функция для обработки кнопки π
+function handlePiButton(calculator: CalculatorReceiver) {
+  const piValue = Math.PI.toString();
+  
+  // Если есть активный оператор, значит π должно быть вторым операндом
+  if (calculator.operator) {
+    // Если secondOperand пуст, устанавливаем его равным π
+    if (!calculator.secondOperand) {
+      calculator.secondOperand = piValue;
+    } else {
+      // Иначе заменяем текущее значение на π (как при вводе цифры)
+      calculator.secondOperand = piValue;
+    }
+    // Обновляем дисплей с учетом обоих операндов и оператора
+    calculator.updateDisplay(`${calculator.firstOperand} ${calculator.operator} ${calculator.secondOperand}`);
+  } else {
+    // Если нет активного оператора, значит π должно быть первым операндом
+    calculator.firstOperand = piValue;
+    calculator.updateDisplay(calculator.firstOperand);
+  }
+}
+
+// Функция для применения унарного оператора ко второму операнду (5+ln(10))
+function applyUnaryToSecondOperand(calculator: CalculatorReceiver, operator: string) {
+  // Если есть активный бинарный оператор и второй операнд
+  if (calculator.operator && calculator.secondOperand) {
+    // Получаем числовое значение второго операнда
+    const value = parseFloat(calculator.secondOperand);
+    
+    // Получаем унарную команду
+    const command = calculator.unaryOperatorRegistry.getOperator(operator);
+    
+    if (!command) {
+      calculator.updateDisplay(`неизвестная команда`);
+      return;
+    }
+    
+    // Проверяем, можно ли выполнить вычисление
+    if (command.canCalculate && !command.canCalculate(value)) {
+      calculator.updateDisplay("Ошибка");
+      return;
+    }
+    
+    // Вычисляем результат унарной операции
+    const result = command.calculate(value);
+    
+    // Форматируем результат и обновляем второй операнд
+    if (result !== undefined && result !== null) {
+      let formattedResult = result;
+      
+      if (typeof formattedResult === "number") {
+        if (!Number.isInteger(formattedResult)) {
+          formattedResult = parseFloat(formattedResult.toFixed(4));
+        }
+        calculator.secondOperand = formattedResult.toString();
+      } else {
+        calculator.secondOperand = String(formattedResult);
+      }
+      
+      // Обновляем дисплей с новым значением второго операнда
+      calculator.updateDisplay(`${calculator.firstOperand} ${calculator.operator} ${calculator.secondOperand}`);
+    }
+  } else {
+    // Если нет активного оператора или второго операнда, используем стандартную обработку унарной операции
+    calculator.executeOperation(operator);
   }
 }
 

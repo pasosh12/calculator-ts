@@ -71,6 +71,9 @@ export class TanOperator implements UnaryOperatorCommand {
 
 export class PiConstantOperator implements UnaryOperatorCommand {
   calculate(value: number): number {
+    if(value!==null && !isNaN(value)){
+      return value;
+    }
     return Math.PI;
   }
 }
