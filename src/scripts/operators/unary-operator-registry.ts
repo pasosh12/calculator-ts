@@ -50,7 +50,7 @@ export class UnaryOperatorRegistry {
     this.operators.set("cosh", new HyperbolicCosineOperator());
     this.operators.set("tanh", new HyperbolicTangentOperator());
     this.operators.set("e", new EulerNumberOperator()); 
-    this.operators.set("e^x", new EulerPowerOperator());
+    this.operators.set("ex", new EulerPowerOperator());
     this.operators.set("mc", new MemoryClearOperator(memoryRef));
     this.operators.set("m+", new MemoryAddOperator(memoryRef));
     this.operators.set("m-", new MemorySubtractOperator(memoryRef));

@@ -218,7 +218,7 @@ describe("CalculatorReceiver", () => {
   });
   test('e^x',()=>{
     receiver.firstOperand = "2";
-    receiver.executeOperation("e^x");
+    receiver.executeOperation("ex");
     expect(parseFloat(receiver.firstOperand)).toBeCloseTo(7.3891, 4);
     expect(parseFloat(display.textContent)).toBeCloseTo(7.3891, 4);
   })

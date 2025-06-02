@@ -137,8 +137,15 @@ export class EulerNumberOperator implements UnaryOperatorCommand {
   }
 } 
 export class EulerPowerOperator implements UnaryOperatorCommand {
-  calculate(value: number): number {
-    return Math.pow(Math.E, value);
+  calculate(value: number = 0): number {
+    if (isNaN(value) || value === null) {
+      value = 0;
+    } 
+    return value === 0 ? 1 : Math.pow(Math.E, value);
+  }
+  
+  canCalculate(value: number): boolean {
+    return true;
   }
 }
 
