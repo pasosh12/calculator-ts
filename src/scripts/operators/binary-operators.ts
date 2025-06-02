@@ -63,8 +63,10 @@ export class PowerOperator implements BinaryOperatorCommand {
   }
 }
 
-export class EulerNumberOperator implements BinaryOperatorCommand {
+// число * 10^степень
+// 5 EE 3 = 5 * 10^3 = 5000
+export class ScientificNotationOperator implements BinaryOperatorCommand {
   calculate(a: number, b: number): number {
-    return Math.E;
+    return a * Math.pow(10, b);
   }
 }

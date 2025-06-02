@@ -7,7 +7,7 @@ import {
   DivisionOperator,
   RootOperator,
   PowerOperator,
-  EulerNumberOperator
+  ScientificNotationOperator
 } from './binary-operators';
 
 export class BinaryOperatorRegistry {
@@ -23,7 +23,7 @@ export class BinaryOperatorRegistry {
     this.operators.set("÷", new DivisionOperator());
     this.operators.set("y√x", new RootOperator());
     this.operators.set("xy", new PowerOperator());
-    this.operators.set("e", new EulerNumberOperator());
+    this.operators.set("EE", new ScientificNotationOperator());
   }
 
   getOperator(operatorKey: string): BinaryOperatorCommand | undefined {

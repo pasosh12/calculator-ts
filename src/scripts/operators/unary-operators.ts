@@ -51,19 +51,19 @@ export class Log10Operator implements UnaryOperatorCommand {
   }
 }
 
-export class SineOperator implements UnaryOperatorCommand {
+export class SinOperator implements UnaryOperatorCommand {
   calculate(value: number): number {
     return Math.sin((value * Math.PI) / 180);
   }
 }
 
-export class CosineOperator implements UnaryOperatorCommand {
+export class CosOperator implements UnaryOperatorCommand {
   calculate(value: number): number {
     return Math.cos((value * Math.PI) / 180);
   }
 }
 
-export class TangentOperator implements UnaryOperatorCommand {
+export class TanOperator implements UnaryOperatorCommand {
   calculate(value: number): number {
     return Math.tan((value * Math.PI) / 180);
   }
@@ -131,7 +131,17 @@ export class HyperbolicTangentOperator implements UnaryOperatorCommand {
   }
 }
 
-// Команды для работы с памятью
+export class EulerNumberOperator implements UnaryOperatorCommand {
+  calculate(value: number): number {
+    return Math.E;
+  }
+} 
+export class EulerPowerOperator implements UnaryOperatorCommand {
+  calculate(value: number): number {
+    return Math.pow(Math.E, value);
+  }
+}
+
 export class MemoryClearOperator implements UnaryOperatorCommand {
   private memoryReference: { memory: number };
 

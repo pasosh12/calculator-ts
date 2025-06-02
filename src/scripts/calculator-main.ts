@@ -14,13 +14,12 @@ const display = document.querySelector(".display") as HTMLElement | null;
 const buttons = document.querySelectorAll(".buttons button");
 const receiver = new CalculatorReceiver(display);
 
-const doubleOperandOperators = ["+", "-", "×", "÷", "y√x", "xy"];
-const singleOperandOperators = [
+const doubleOperandOperators = ["+", "-", "×", "÷", "y√x", "xy", "EE"];
+const singleOperandOperators = [ 
   "mc",
   "m+",
   "m-",
-  "mr",
-  "2nd",
+  "mr", 
   "x2",
   "x3",
   "ex",
@@ -35,13 +34,11 @@ const singleOperandOperators = [
   "cos",
   "tan",
   "e",
-  "EE",
   "Rad",
   "sinh",
   "cosh",
   "tanh",
   "π",
-  "Rand",
 ];
 
 function handleButtonClick(event: Event) {
@@ -89,6 +86,8 @@ function convertOperator(key: string): string {
       return "÷";
     case "*":
       return "×";
+      case 'ex':
+        return "e^x";
     default:
       return key;
   }

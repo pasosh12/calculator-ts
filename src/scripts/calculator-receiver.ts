@@ -1,4 +1,4 @@
-import { UnaryOperatorRegistry } from './operators/operator-registry';
+import { UnaryOperatorRegistry } from './operators/unary-operator-registry';
 import { BinaryOperatorRegistry } from './operators/binary-operator-registry';
 
 export class CalculatorReceiver {
@@ -199,8 +199,8 @@ export class CalculatorReceiver {
   inputOperator(op: string) {
     if (!this.firstOperand) return;
     
-    // Если установлен флаг shouldResetDisplay, то первый операнд это уже результат
-    // и мы можем продолжить с ним работать
+    // if shouldResetDisplay === true, то первый операнд это уже результат
+   
     if (this.shouldResetDisplay) {
       this.shouldResetDisplay = false;
       // Продолжаем с текущим результатом в firstOperand
@@ -321,18 +321,18 @@ export class CalculatorReceiver {
     }
   }
 
-  // Метод для обработки нажатия кнопки "=" или клавиши Enter
-  calculateResult() {
-    if (this.operator && this.secondOperand) {
-      
-      // Вызываем handleDoubleOperandOperator с параметром keepOperator=false,
-      // чтобы сбросить оператор после вычисления
+  executeOperation(operator?: string) {
+    // Если передан оператор, рассматриваем унарную операцию
+    if (operator) {
+      this.handleSingleOperandOperator(operator);
+    } 
+    // бинарная операцию (нажатие "=")
+    else if (this.operator && this.secondOperand) {
+      // сбросить оператор после вычисления
       this.handleDoubleOperandOperator(false);
       
       // Но если пользователь вводит цифру, она должна начать новое выражение
       this.shouldResetDisplay = true;
     }
-    
-    
   }
 }

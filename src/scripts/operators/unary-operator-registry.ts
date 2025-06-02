@@ -6,9 +6,9 @@ import {
   CubeOperator,
   NaturalLogOperator,
   Log10Operator,
-  SineOperator,
-  CosineOperator,
-  TangentOperator,
+  SinOperator,
+  CosOperator,
+  TanOperator,
   PiConstantOperator,
   PowerOf10Operator,
   FactorialOperator,
@@ -17,18 +17,20 @@ import {
   HyperbolicSineOperator,
   HyperbolicCosineOperator,
   HyperbolicTangentOperator,
+  EulerNumberOperator,
+  EulerPowerOperator,
   MemoryClearOperator,
   MemoryAddOperator,
   MemorySubtractOperator,
-  MemoryRecallOperator
-} from './unary-operators';
+  MemoryRecallOperator,
+} from "./unary-operators";
 
 export class UnaryOperatorRegistry {
   private operators: Map<string, UnaryOperatorCommand>;
 
   constructor(memoryRef: { memory: number }) {
     this.operators = new Map();
-    
+
     // Инициализация реестра операторов
     this.operators.set("√x", new SquareRootOperator());
     this.operators.set("3√x", new CubeRootOperator());
@@ -36,9 +38,9 @@ export class UnaryOperatorRegistry {
     this.operators.set("x3", new CubeOperator());
     this.operators.set("ln", new NaturalLogOperator());
     this.operators.set("log10", new Log10Operator());
-    this.operators.set("sin", new SineOperator());
-    this.operators.set("cos", new CosineOperator());
-    this.operators.set("tan", new TangentOperator());
+    this.operators.set("sin", new SinOperator());
+    this.operators.set("cos", new CosOperator());
+    this.operators.set("tan", new TanOperator());
     this.operators.set("π", new PiConstantOperator());
     this.operators.set("10x", new PowerOf10Operator());
     this.operators.set("x!", new FactorialOperator());
@@ -47,8 +49,8 @@ export class UnaryOperatorRegistry {
     this.operators.set("sinh", new HyperbolicSineOperator());
     this.operators.set("cosh", new HyperbolicCosineOperator());
     this.operators.set("tanh", new HyperbolicTangentOperator());
-    
-    // Операторы для работы с памятью
+    this.operators.set("e", new EulerNumberOperator()); 
+    this.operators.set("e^x", new EulerPowerOperator());
     this.operators.set("mc", new MemoryClearOperator(memoryRef));
     this.operators.set("m+", new MemoryAddOperator(memoryRef));
     this.operators.set("m-", new MemorySubtractOperator(memoryRef));
