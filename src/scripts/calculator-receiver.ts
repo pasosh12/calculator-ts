@@ -1,3 +1,6 @@
+import { UnaryOperatorRegistry } from './operators/operator-registry';
+import { BinaryOperatorRegistry } from './operators/binary-operator-registry';
+
 export class CalculatorReceiver {
   firstOperand: string = "";
   operator: string = "";
@@ -5,9 +8,19 @@ export class CalculatorReceiver {
   shouldResetDisplay: boolean = false;
   memory: number = 0;
   display: HTMLElement | null;
+  private unaryOperatorRegistry: UnaryOperatorRegistry;
+  private binaryOperatorRegistry: BinaryOperatorRegistry;
 
   constructor(display: HTMLElement | null) {
     this.display = display;
+    // Создаем объект с доступом к памяти для передачи в реестр
+    const memoryRef = {
+      get memory() { return this._calculator.memory; },
+      set memory(value: number) { this._calculator.memory = value; },
+      _calculator: this
+    };
+    this.unaryOperatorRegistry = new UnaryOperatorRegistry(memoryRef);
+    this.binaryOperatorRegistry = new BinaryOperatorRegistry();
   }
 
   updateDisplay(value: string) {
@@ -79,57 +92,56 @@ export class CalculatorReceiver {
     }
   }
 
-  calculateResult() {
+  handleDoubleOperandOperator(keepOperator: boolean = false) {
     if (!this.firstOperand || !this.secondOperand) return;
 
     const a = parseFloat(this.firstOperand);
     const b = parseFloat(this.secondOperand);
-    let result: number | string = "";
-
-    switch (this.operator) {
-      case "+":
-        result = a + b;
-        break;
-      case "-":
-        result = a - b;
-        break;
-      case "×":
-        result = a * b;
-        break;
-      case "÷":
-        result = b !== 0 ? a / b : "Ошибка";
-        break;
-      case "y√x":
-        result = a ** (1 / b);
-        break;
-      case "xy":
-        result = Math.pow(a, b);
-        break;
-      case "e":
-        if (this.operator) {
-          this.secondOperand = Math.E.toString();
-          this.updateDisplay(
-            `${this.firstOperand} ${this.operator} ${this.secondOperand}`
-          );
-        } else {
-          this.firstOperand = Math.E.toString();
-          this.updateDisplay(this.firstOperand);
+    const currentOperator = this.operator; // Сохраняем текущий оператор
+    const command = this.binaryOperatorRegistry.getOperator(this.operator);
+    
+    if (!command) {
+      this.updateDisplay(`неизвестная операция`);
+      return;
+    }
+    
+    // Проверяем метод canCalculate только если он существует
+    if (command.canCalculate && !command.canCalculate(a, b)) {
+      this.updateDisplay("Ошибка");
+      return;
+    }
+    
+    const result = command.calculate(a, b);
+    
+    if (result !== undefined && result !== null) {
+      // Форматируем числовые результаты для лучшего отображения
+      let formattedResult = result;
+      let resultStr = "";
+      
+      if (typeof formattedResult === "number") {
+        if (!Number.isInteger(formattedResult)) {
+          formattedResult = parseFloat(formattedResult.toFixed(4));
         }
-        break;
-      default:
-        return;
+        resultStr = formattedResult.toString();
+      } else if (typeof formattedResult === "string") {
+        resultStr = formattedResult;
+      } else {
+        // Если результат другого типа, конвертируем в строку
+        resultStr = String(formattedResult);
+      }
+
+      this.firstOperand = resultStr;
+      this.secondOperand = "";
+      
+      // Если keepOperator=true, сохраняем оператор, иначе сбрасываем
+      if (!keepOperator) {
+        this.operator = "";
+        this.updateDisplay(resultStr);
+      } else {
+        // Сохраняем оператор и отображаем с ним
+        this.updateDisplay(`${resultStr} ${this.operator}`);
+      }
     }
-
-    if (typeof result === "number" && !Number.isInteger(result)) {
-      result = parseFloat(result.toFixed(2));
-    }
-
-    this.updateDisplay(result.toString());
-
-    this.shouldResetDisplay = true;
-    this.firstOperand = typeof result === "number" ? result.toString() : "";
-    this.secondOperand = "";
-    this.operator = "";
   }
 
   inputDigit(digit: string) {
@@ -190,131 +202,79 @@ export class CalculatorReceiver {
 
   inputOperator(op: string) {
     if (!this.firstOperand) return;
+    
+    // Если есть оператор, но нет второго операнда - просто меняем оператор
     if (this.operator && !this.secondOperand) {
       this.operator = op;
       this.updateDisplay(`${this.firstOperand} ${this.operator}`);
       return;
     }
+    
+    // Если есть оператор и второй операнд - вычисляем результат, затем устанавливаем новый оператор
     if (this.operator && this.secondOperand) {
-      this.calculateResult();
+      // Сначала устанавливаем новый оператор (иначе handleDoubleOperandOperator использует старый)
       this.operator = op;
-      this.secondOperand = "";
+      // Выполняем вычисление, сохраняя оператор
+      this.handleDoubleOperandOperator(true);
+      // this.firstOperand уже содержит результат, secondOperand сброшен
+      // В handleDoubleOperandOperator уже вызван updateDisplay с правильным результатом и оператором
+      return;
     } else {
+      // Первый ввод оператора
       this.operator = op;
     }
+    
+    // Показываем результат с новым оператором
     this.updateDisplay(`${this.firstOperand} ${this.operator}`);
   }
 
   handleSingleOperandOperator(operator: string) {
+    const value = parseFloat(this.firstOperand);
+    const command = this.unaryOperatorRegistry.getOperator(operator);
     
-    let value = parseFloat(this.firstOperand);
-    let result: number | string | undefined;
-
-    switch (operator) {
-      case "√x":
-      case "&radic;x":
-        if (value < 0) {
-          this.updateDisplay("Ошибка");
-          return;
-        }
-        result = Math.sqrt(value);
-        break;
-      case "3√x":
-        result = Math.cbrt(value);
-        break;
-      case "x2":
-        result = Math.pow(value, 2);
-        break;
-      case "x3":
-        result = Math.pow(value, 3);
-        break;
-      case "ln":
-        if (value <= 0) {
-          this.updateDisplay("Ошибка");
-          return;
-        }
-        result = Math.log(value);
-        break;
-      case "log10":
-        if (value <= 0) {
-          this.updateDisplay("Ошибка");
-          return;
-        }
-        result = Math.log10(value);
-        break;
-      case "sin":
-        result = Math.sin((value * Math.PI) / 180);
-        break;
-      case "cos":
-        result = Math.cos((value * Math.PI) / 180);
-        break;
-      case "tan":
-        result = Math.tan((value * Math.PI) / 180);
-        break;
-      case "π":
-        result = Math.PI;
-        break;
-      case "mc":
-        this.memory = 0;
-        break;
-      case "m+":
-        this.memory += value;
-        break;
-      case "m-":
-        this.memory -= value;
-        break;
-      case "mr":
-        result = this.memory;
-        break;
-      case "10x":
-        result = Math.pow(10, value);
-        break;
-      case "x!": {  
-        if (value < 0 || !Number.isInteger(value)) {
-          this.updateDisplay("Ошибка");
-          return;
-        }
-        
-        function factorial(n: number): number {
-          if (n === 0 || n === 1) return 1;
-          return n * factorial(n - 1);
-        }
-        
-        result = factorial(value);
-        break;
-      }
-      case "1/x":
-        if (value === 0 || isNaN(value)) {
-          this.updateDisplay(`Ошибка`);
-          return;
-        }
-        result = 1 / value;
-        break;
-      case 'Rad':
-        result = value* Math.PI / 180;
-        break;
-      case 'sinh':
-        result = Math.sinh(value);
-        break;
-      case 'cosh':
-        result = Math.cosh(value);
-        break;
-      case 'tanh':
-        result = Math.tanh(value);
-        break;
-      default:
-        this.updateDisplay(`неизвестная команда`);
-        return;
+    if (!command) {
+      this.updateDisplay(`неизвестная команда`);
+      return;
     }
-
-    if (result !== undefined) {
+    
+    // Проверяем метод canCalculate только если он существует
+    if (command.canCalculate && !command.canCalculate(value)) {
+      this.updateDisplay("Ошибка");
+      return;
+    }
+    
+    const result = command.calculate(value);
+    
+    if (result !== undefined && result !== null) {
       // Форматируем числовые результаты для лучшего отображения
-      if (typeof result === "number" && !Number.isInteger(result)) {
-        result = parseFloat(result.toFixed(4));
+      let formattedResult = result;
+      let resultStr = "";
+      
+      if (typeof formattedResult === "number") {
+        if (!Number.isInteger(formattedResult)) {
+          formattedResult = parseFloat(formattedResult.toFixed(4));
+        }
+        resultStr = formattedResult.toString();
+      } else if (typeof formattedResult === "string") {
+        resultStr = formattedResult;
+      } else {
+        // Если результат другого типа, конвертируем в строку
+        resultStr = String(formattedResult);
       }
 
-      this.firstOperand = typeof result === "number" ? result.toString() : "";
+      this.firstOperand = typeof formattedResult === "number" ? formattedResult.toString() : "";
       this.updateDisplay(this.firstOperand);
+    }
+  }
+
+  // Метод для обработки нажатия кнопки "=" или клавиши Enter
+  calculateResult() {
+    if (this.operator && this.secondOperand) {
+      // Вызываем handleDoubleOperandOperator с параметром keepOperator=false,
+      // чтобы сбросить оператор после вычисления
+      this.handleDoubleOperandOperator(false);
+      // Устанавливаем флаг, что следующий ввод цифры должен заменить текущее значение
+      this.shouldResetDisplay = false;
     }
   }
 }

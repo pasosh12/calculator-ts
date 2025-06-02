@@ -19,7 +19,7 @@ describe("CalculatorReceiver", () => {
     receiver.firstOperand = "2";
     receiver.operator = "+";
     receiver.secondOperand = "3";
-    receiver.calculateResult();
+    receiver.handleDoubleOperandOperator();
     expect(receiver.firstOperand).toBe("5"); 
     expect(display.textContent).toBe("5");
   });
@@ -28,7 +28,7 @@ describe("CalculatorReceiver", () => {
     receiver.firstOperand = "10";
     receiver.operator = "÷";
     receiver.secondOperand = "0";
-    receiver.calculateResult();
+    receiver.handleDoubleOperandOperator();
     // expect(receiver.firstOperand).toBe("Ошибка"); 
     expect(display.textContent).toBe("Ошибка");
   });
