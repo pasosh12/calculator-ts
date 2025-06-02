@@ -22,8 +22,7 @@ export class CalculatorReceiver {
     this.unaryOperatorRegistry = new UnaryOperatorRegistry(memoryRef);
     this.binaryOperatorRegistry = new BinaryOperatorRegistry();
   }
-
-  updateDisplay(value: string) {
+  updateDisplay(value: string) {  
     if (this.display) {
       this.display.textContent = value.toString();
     }
@@ -93,11 +92,11 @@ export class CalculatorReceiver {
   }
 
   handleDoubleOperandOperator(keepOperator: boolean = false) {
+    
     if (!this.firstOperand || !this.secondOperand) return;
 
     const a = parseFloat(this.firstOperand);
     const b = parseFloat(this.secondOperand);
-    const currentOperator = this.operator; // Сохраняем текущий оператор
     const command = this.binaryOperatorRegistry.getOperator(this.operator);
     
     if (!command) {
@@ -105,70 +104,67 @@ export class CalculatorReceiver {
       return;
     }
     
-    // Проверяем метод canCalculate только если он существует
     if (command.canCalculate && !command.canCalculate(a, b)) {
       this.updateDisplay("Ошибка");
       return;
     }
-    
+
     const result = command.calculate(a, b);
     
     if (result !== undefined && result !== null) {
-      // Форматируем числовые результаты для лучшего отображения
       let formattedResult = result;
-      let resultStr = "";
       
-      if (typeof formattedResult === "number") {
-        if (!Number.isInteger(formattedResult)) {
-          formattedResult = parseFloat(formattedResult.toFixed(4));
-        }
-        resultStr = formattedResult.toString();
-      } else if (typeof formattedResult === "string") {
-        resultStr = formattedResult;
-      } else {
-        // Если результат другого типа, конвертируем в строку
-        resultStr = String(formattedResult);
+      if (typeof formattedResult === "number" && !Number.isInteger(formattedResult)) {
+        formattedResult = parseFloat(formattedResult.toFixed(4));
       }
+      
+      // Преобразуем результат в строку
+      const resultStr = typeof formattedResult === "number" ? 
+        formattedResult.toString() : String(formattedResult);
 
       this.firstOperand = resultStr;
       this.secondOperand = "";
       
-      // Если keepOperator=true, сохраняем оператор, иначе сбрасываем
-      if (!keepOperator) {
+      if (!keepOperator) { 
         this.operator = "";
         this.updateDisplay(resultStr);
       } else {
-        // Сохраняем оператор и отображаем с ним
         this.updateDisplay(`${resultStr} ${this.operator}`);
       }
     }
   }
 
+   
+
   inputDigit(digit: string) {
+    
+    // Проверка на ввод нуля в начале числа
     if (digit === "0" && this.firstOperand === "0" && !this.operator) return;
 
-    if (this.shouldResetDisplay) {
+    // Если установлен флаг shouldResetDisplay, сбрасываем операнды
+    if (this.shouldResetDisplay) { 
       this.firstOperand = "";
       this.operator = "";
+      this.secondOperand = "";
       this.shouldResetDisplay = false;
     }
 
     if (!this.operator) {
+      // Ввод первого операнда
       if (!this.firstOperand) {
         this.firstOperand = digit;
       } else {
         this.firstOperand = `${this.firstOperand}${digit}`;
-      }
+      } 
       this.updateDisplay(this.firstOperand);
     } else {
+      // Ввод второго операнда
       if (!this.secondOperand) {
         this.secondOperand = digit;
       } else {
         this.secondOperand = `${this.secondOperand}${digit}`;
-      }
-      this.updateDisplay(
-        `${this.firstOperand} ${this.operator} ${this.secondOperand}`
-      );
+      } 
+      this.updateDisplay(`${this.firstOperand} ${this.operator} ${this.secondOperand}`);
     }
   }
 
@@ -203,6 +199,17 @@ export class CalculatorReceiver {
   inputOperator(op: string) {
     if (!this.firstOperand) return;
     
+    // Если установлен флаг shouldResetDisplay, то первый операнд это уже результат
+    // и мы можем продолжить с ним работать
+    if (this.shouldResetDisplay) {
+      this.shouldResetDisplay = false;
+      // Продолжаем с текущим результатом в firstOperand
+      this.operator = op;
+      this.secondOperand = "";
+      this.updateDisplay(`${this.firstOperand} ${this.operator}`);
+      return;
+    }
+    
     // Если есть оператор, но нет второго операнда - просто меняем оператор
     if (this.operator && !this.secondOperand) {
       this.operator = op;
@@ -212,20 +219,67 @@ export class CalculatorReceiver {
     
     // Если есть оператор и второй операнд - вычисляем результат, затем устанавливаем новый оператор
     if (this.operator && this.secondOperand) {
-      // Сначала устанавливаем новый оператор (иначе handleDoubleOperandOperator использует старый)
-      this.operator = op;
-      // Выполняем вычисление, сохраняя оператор
-      this.handleDoubleOperandOperator(true);
-      // this.firstOperand уже содержит результат, secondOperand сброшен
-      // В handleDoubleOperandOperator уже вызван updateDisplay с правильным результатом и оператором
+      // Выполняем вычисление с текущими оператором и операндами
+      const oldOperator = this.operator;
+      const a = parseFloat(this.firstOperand);
+      const b = parseFloat(this.secondOperand);
+      const command = this.binaryOperatorRegistry.getOperator(oldOperator);
+      
+      if (!command) {
+        this.updateDisplay(`неизвестная операция`);
+        return;
+      }
+      
+      if (command.canCalculate && !command.canCalculate(a, b)) {
+        this.updateDisplay("Ошибка");
+        return;
+      }
+      
+      const result = command.calculate(a, b);
+      
+      if (result !== undefined && result !== null) {
+        // Форматируем числовые результаты для лучшего отображения
+        let formattedResult = result;
+        
+        if (typeof formattedResult === "number" && !Number.isInteger(formattedResult)) {
+          formattedResult = parseFloat(formattedResult.toFixed(4));
+        }
+        
+        // Сохраняем результат как первый операнд
+        this.firstOperand = typeof formattedResult === "number" ? 
+          formattedResult.toString() : String(formattedResult);
+        
+        // Устанавливаем новый оператор
+        this.operator = op;
+        this.secondOperand = "";
+        
+        // Обновляем отображение
+        if (!this.operator) {
+          this.updateDisplay(this.firstOperand || "0");
+        } else if (!this.secondOperand) {
+          this.updateDisplay(`${this.firstOperand} ${this.operator}`);
+        } else {
+          this.updateDisplay(`${this.firstOperand} ${this.operator} ${this.secondOperand}`);
+        }
+        
+        // Важно: не сбрасывать дисплей при следующем вводе
+        this.shouldResetDisplay = false;
+      }
+      
       return;
     } else {
       // Первый ввод оператора
       this.operator = op;
     }
     
-    // Показываем результат с новым оператором
-    this.updateDisplay(`${this.firstOperand} ${this.operator}`);
+    // Обновляем отображение
+    if (!this.operator) {
+      this.updateDisplay(this.firstOperand || "0");
+    } else if (!this.secondOperand) {
+      this.updateDisplay(`${this.firstOperand} ${this.operator}`);
+    } else {
+      this.updateDisplay(`${this.firstOperand} ${this.operator} ${this.secondOperand}`);
+    }
   }
 
   handleSingleOperandOperator(operator: string) {
@@ -270,11 +324,15 @@ export class CalculatorReceiver {
   // Метод для обработки нажатия кнопки "=" или клавиши Enter
   calculateResult() {
     if (this.operator && this.secondOperand) {
+      
       // Вызываем handleDoubleOperandOperator с параметром keepOperator=false,
       // чтобы сбросить оператор после вычисления
       this.handleDoubleOperandOperator(false);
-      // Устанавливаем флаг, что следующий ввод цифры должен заменить текущее значение
-      this.shouldResetDisplay = false;
+      
+      // Но если пользователь вводит цифру, она должна начать новое выражение
+      this.shouldResetDisplay = true;
     }
+    
+    
   }
 }
