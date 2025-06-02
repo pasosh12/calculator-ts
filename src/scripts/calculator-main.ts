@@ -8,75 +8,58 @@ import { ClearCommand } from "./commands/clear-command";
 import { ToggleSignCommand } from "./commands/toggle-sign-command";
 import { DeleteLastDigitCommand } from "./commands/delete-last-digit-command";
 import { PercentageCommand } from "./commands/percentage-command";
-import "../scripts/ThemeToggle"; 
+import { CalculatorInvoker } from "./invoker/calculator-invoker";
+import "../scripts/ThemeToggle";
 
 const display = document.querySelector(".display") as HTMLElement | null;
 const buttons = document.querySelectorAll(".buttons button");
 const receiver = new CalculatorReceiver(display);
+const invoker = new CalculatorInvoker();
 
 const doubleOperandOperators = ["+", "-", "×", "÷", "y√x", "xy", "EE"];
 const singleOperandOperators = [ 
-  "mc",
-  "m+",
-  "m-",
-  "mr", 
-  "x2",
-  "x3",
-  "ex",
-  "10x",
-  "1/x",
-  "√x",
-  "3√x",
-  "ln",
-  "log10",
-  "x!",
-  "sin",
-  "cos",
-  "tan",
-  "e",
-  "Rad",
-  "sinh",
-  "cosh",
-  "tanh",
-  "π",
+  "mc",  "m+",  "m-",  "mr", 
+  "x2",  "x3",  "ex",  "10x",  "1/x",  "√x",  "3√x",
+  "ln",  "log10",  "x!",  "sin",  "cos",  "tan",  "e",
+  "Rad",  "sinh",  "cosh",  "tanh",  "π",
 ];
 
 function handleButtonClick(event: Event) {
   const button = event.target as HTMLElement;
   const buttonValue = button.textContent?.trim() || "";
   if (!isNaN(Number(buttonValue))) {
-    new DigitCommand(buttonValue, receiver).execute();
+    invoker.executeCommand(new DigitCommand(buttonValue, receiver));
   } else if ([",", "."].includes(buttonValue)) {
-    new DecimalCommand(receiver).execute();
+    invoker.executeCommand(new DecimalCommand(receiver));
   } else if (doubleOperandOperators.includes(buttonValue)) {
-    new OperatorCommand(buttonValue, receiver).execute();
+    invoker.executeCommand(new OperatorCommand(buttonValue, receiver));
   } else if (singleOperandOperators.includes(buttonValue)) {
-    new SingleOperandCommand(buttonValue, receiver).execute();
+    invoker.executeCommand(new SingleOperandCommand(buttonValue, receiver));
   } else if (buttonValue === "=") {
-    new ResultCommand(receiver).execute();
+    invoker.executeCommand(new ResultCommand(receiver));
   } else if (buttonValue === "AC") {
-    new ClearCommand(receiver).execute();
+    invoker.executeCommand(new ClearCommand(receiver));
   } else if (buttonValue === "±") {
-    new ToggleSignCommand(receiver).execute();
+    invoker.executeCommand(new ToggleSignCommand(receiver));
   } else if (buttonValue === "%") {
-    new PercentageCommand(receiver).execute();
+    invoker.executeCommand(new PercentageCommand(receiver));
   }
 }
 
 function handleKeyboardInput(event: KeyboardEvent) {
   const key = event.key;
   if (!isNaN(Number(key))) {
-    new DigitCommand(key, receiver).execute();
+    invoker.executeCommand(new DigitCommand(key, receiver));
   } else if (["+", "-", "*", "/"].includes(key)) {
-    new OperatorCommand(convertOperator(key), receiver).execute();
+    invoker.executeCommand(new OperatorCommand(convertOperator(key), receiver));
   } else if ([",", "."].includes(key)) {
-    new DecimalCommand(receiver).execute();
+    invoker.executeCommand(new DecimalCommand(receiver));
   } else if (key === "Enter" || key === "=") {
-    new ResultCommand(receiver).execute();
+    invoker.executeCommand(new ResultCommand(receiver));
   } else if (key === "Escape" || key === "Delete") {
-    new ClearCommand(receiver).execute();
+    invoker.executeCommand(new ClearCommand(receiver));
   } else if (key === "Backspace") {
-    new DeleteLastDigitCommand(receiver).execute();
+    invoker.executeCommand(new DeleteLastDigitCommand(receiver));
   }
 }
 
