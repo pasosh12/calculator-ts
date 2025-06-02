@@ -1,0 +1,134 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    min-width: 870px;
+}
+
+.container {
+
+    margin: 0, auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.calculator {
+    background-color: #575555;
+    border-radius: 6px;
+    overflow: hidden;
+    max-width: 750px;
+    margin: 0 30px;
+}
+
+/* .calculator button { */
+    /* flex: calc(25% - 10px); */
+/* } */
+
+sup {
+    vertical-align: super;
+}
+
+.display {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    background-color: #535353;
+    color: #fff;
+    font-size: 2rem;
+    padding: 10px;
+    height: 80px;
+    overflow: hidden;
+    word-break: break-word;
+    text-align: right;
+}
+
+.display span {
+    display: inline-block;
+    width: 100%;
+    font-size: clamp(1rem, 5vw, 2rem);
+    line-height: 1.2;
+}
+
+.buttons {
+    font-size: 26px;
+    gap: 2px;
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-row: 2/3;
+}
+
+.buttons button { 
+    height: 65px; 
+    text-align: center;
+    font-size: 1rem;
+    padding: 15px;
+    border: none;
+    border-radius: 1px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    color: white;
+    background-color: #797878;
+}
+
+.buttons .btnGrey {
+    background-color: #646464;
+}
+
+.buttons button:hover {
+    background-color: #aca7a7;
+}
+
+.buttons button.operator {
+    background-color: #FF9F0A;
+}
+
+.zero {
+    grid-column: span 2;
+}
+
+.traffic-light {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+}
+
+.circle {
+
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    transition: transform 0.5s ease-in-out, box-shadow 0.5s ease-in-out;
+}
+
+.red {
+    background-color: #ff605c;
+}
+
+.yellow {
+    background-color: #ffbd44;
+}
+
+.green {
+    background-color: #00ca4e;
+}
+
+.buttons button.operator:hover {
+    background-color: #e08400;
+}
+
+.circle:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}

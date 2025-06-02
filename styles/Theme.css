@@ -1,0 +1,38 @@
+[data-theme="light"] {
+    --color-bg: #ffffff;
+    --color-fg: #000000;
+}
+
+[data-theme="dark"] {
+    --color-bg: #000000;
+    --color-fg: #ffffff;
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+}
+
+button {
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    transition: all 1s ease-in-out;
+    border-radius: 2rem;
+    cursor: pointer;
+    color: var(--color-fg);
+    background-color: var(--color-bg);
+    border: 0.25rem solid var(--color-fg);
+}
+.icon {
+    font-size: 1.5rem;
+    transition: opacity 0.3s ease;
+}
+
+.icon.hidden {
+    opacity: 0;
+    pointer-events: none; /* Prevent interaction */
+}
